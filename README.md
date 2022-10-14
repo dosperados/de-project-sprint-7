@@ -53,7 +53,7 @@
 * `STG` - /user/dosperados/data/events/ (**hdfs**)
 * `DDS - geo` - /user/dosperados/data/citygeodata/geo.csv (**hdfs**)
 * `DDS - events` - /user/dosperados/data/events/date=yyyy-mm-dd (**hdfs**)
-* `Mart` - /user/dosperados/data/marts
+* `Mart` - /user/dosperados/data/marts (**hdfs**)
 
 
 ### Описание схемы RAW-слоя
