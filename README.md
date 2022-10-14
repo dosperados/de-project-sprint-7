@@ -63,7 +63,7 @@
 ~~Здест структура партиционированного слоя~~
 
 ## Схема взаимодействия
-Airflow startr DAG -> PySpark read -> Hadoop -> PySpark calculation metric
+Airflow startr DAG -> PySpark read -> Hadoop -> PySpark calculation metric -> Store result Hadoop
 
 
 
