@@ -73,7 +73,21 @@ root
 * `month_user` — количество регистраций за месяц.
 
 ```
-
++-------+-------------------+-------------------+------------+-------------+---------+----------+-------------+--------------+-----------------+------------------+
+|zone_id|               week|              month|week_message|month_message|week_user|month_user|week_reaction|month_reaction|week_subscription|month_subscription|
++-------+-------------------+-------------------+------------+-------------+---------+----------+-------------+--------------+-----------------+------------------+
+|     12|2022-05-09 00:00:00|2022-05-01 00:00:00|         233|          506|      143|       279|         6662|         18363|            12833|             35261|
+|      3|2022-05-09 00:00:00|2022-05-01 00:00:00|         712|         1610|      418|       865|        23357|         63761|            44336|            122094|
+|     14|2022-05-09 00:00:00|2022-05-01 00:00:00|          57|          125|       34|        64|         1923|          5159|             3619|              9958|
+|      7|2022-05-09 00:00:00|2022-05-01 00:00:00|         292|          591|      137|       269|         7528|         20469|            14184|             38747|
+|     17|2022-05-09 00:00:00|2022-05-01 00:00:00|         291|          624|      150|       315|         8764|         24133|            16900|             46148|
+|      5|2022-05-09 00:00:00|2022-05-01 00:00:00|         260|          616|      161|       324|         8600|         24040|            16685|             45817|
+|      4|2022-05-09 00:00:00|2022-05-01 00:00:00|         421|          923|      207|       421|        11821|         32580|            22464|             62105|
+|     18|2022-05-09 00:00:00|2022-05-01 00:00:00|          84|          180|       47|       100|         2543|          7004|             4871|             13489|
+|     22|2022-05-16 00:00:00|2022-05-01 00:00:00|         394|          756|      161|       324|        15338|         24118|            29285|             46196|
+|     18|2022-05-16 00:00:00|2022-05-01 00:00:00|          96|          180|       53|       100|         4461|          7004|             8618|             13489|
++-------+-------------------+-------------------+------------+-------------+---------+----------+-------------+--------------+-----------------+------------------+
+only showing top 10 rows
 root
  |-- zone_id: long (nullable = true)
  |-- week: timestamp (nullable = true)
@@ -99,10 +113,44 @@ root
 
 
 ### Описание схемы RAW-слоя
-~~Здест структура источника~~
-
-### Описание схемы STG-слоя
-~~Здест структура партиционированного слоя~~
+```
+root
+ |-- event: struct (nullable = true)
+ |    |-- admins: array (nullable = true)
+ |    |    |-- element: long (containsNull = true)
+ |    |-- channel_id: long (nullable = true)
+ |    |-- datetime: string (nullable = true)
+ |    |-- media: struct (nullable = true)
+ |    |    |-- media_type: string (nullable = true)
+ |    |    |-- src: string (nullable = true)
+ |    |-- message: string (nullable = true)
+ |    |-- message_channel_to: long (nullable = true)
+ |    |-- message_from: long (nullable = true)
+ |    |-- message_group: long (nullable = true)
+ |    |-- message_id: long (nullable = true)
+ |    |-- message_to: long (nullable = true)
+ |    |-- message_ts: string (nullable = true)
+ |    |-- reaction_from: string (nullable = true)
+ |    |-- reaction_type: string (nullable = true)
+ |    |-- subscription_channel: long (nullable = true)
+ |    |-- subscription_user: string (nullable = true)
+ |    |-- tags: array (nullable = true)
+ |    |    |-- element: string (containsNull = true)
+ |    |-- user: string (nullable = true)
+ |-- event_type: string (nullable = true)
+ |-- lat: double (nullable = true)
+ |-- lon: double (nullable = true)
+ 
+ +--------------------+------------+-------------------+------------------+
+|               event|  event_type|                lat|               lon|
++--------------------+------------+-------------------+------------------+
+|[,, 2022-05-21 02...|subscription|-33.543102424518636|151.48624064210895|
+|[[103235], 859291...|     message| -33.94742527623598|151.32387878072961|
+|[,, 2022-05-21 12...|    reaction| -37.12220179510437|144.28231815733022|
+|[,, 2022-05-21 17...|subscription| -20.81900702450072|149.59015699102054|
+|[[107808], 865707...|     message|-11.539551427762717|131.17148068495302|
++--------------------+------------+-------------------+------------------+
+```
 
 ## Схема взаимодействия
 Airflow startr DAG -> PySpark read -> Hadoop -> PySpark calculation metric -> Store result Hadoop
@@ -111,8 +159,12 @@ Airflow startr DAG -> PySpark read -> Hadoop -> PySpark calculation metric -> St
 
 ## Запуск проекта
 1. Загрузить **variables** из файла `/src/variables.json` в Airflow - Variable
-2. Инициальная загрузка данных выполняется в ручную (один раз) далее используется скрипт инкрементальной загрузки и расчетов
-3. ::::::::::::::::::::::::::::::::::::::::::::::::::::
+2. Инициальная загрузка данных **DAG_initial_load.py** выполняется в ручную (один раз) далее используется скрипт инкрементальной загрузки и расчетов
+3. Обновление STG слоя - **DAG_update_stg.py** автозапуск каждый день (ХОТЕЛ НАСТРОИТЬ ПОСЛЕДОВАТЕЛЬНЫЙ ВЫЗОВ СЛЕДУЩЕГО **DAG_main_calc_marts.py** - не знаю как, если поможете буду благодарен)
+4. Для расчета витрины запустить **DAG_main_calc_marts.py**
+5. Результаты расчетов сохранены в формате `parquet` в соответвующих папках
+	- hdfs:/user/dosperados/marts/users
+	- hdfs:/user/dosperados/marts/geo
 
 ### Структура репозитория
 
@@ -123,6 +175,7 @@ Airflow startr DAG -> PySpark read -> Hadoop -> PySpark calculation metric -> St
 	- `DAG_update_stg.py` — DAG обновляет слой STG из источника и автоматически запускает **DAG_main_calc_marts.py** для расчета метирик ветрины.
 	
 - `/src/sqripts` - py файлы c job'ами
-	- `initial_load_job.py` — 
-	- `calculating_user_analitics_job.py` — 
-	- `calculating_geo_analitics_job.py` — 
+	- `initial_load_job.py` — Job инициальной загрузки.
+	- `calculating_user_analitics_job.py` — Job расчета пользовательских метрик и сохранения витрины.
+	- `calculating_geo_analitics_job.py` — Job расчета geo метрик и сохранения витрины.
+	- `update_stg_by_date_job.py`  — Job обновления STG.
