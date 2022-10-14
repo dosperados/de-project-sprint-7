@@ -35,8 +35,8 @@ date = '2022-05-21'
 depth = Variable.get("project_7_depth") #28
 
 
-## /usr/lib/spark/bin/spark-submit --master yarn --deploy-mode cluster calculating_geo_analitics.py dosperados hdfs://rc1a-dataproc-m-dg5lgqqm7jju58f9.mdb.yandexcloud.net:8020 /user/master/data/geo/events/ 2022-05-21 28
-## spark-submit --master yarn --deploy-mode cluster calculating_geo_analitics.py sname hdfs_path geo_path date depth
+## /usr/lib/spark/bin/spark-submit --master yarn --deploy-mode cluster /scripts/update_stg_by_date_job.py dosperados hdfs://rc1a-dataproc-m-dg5lgqqm7jju58f9.mdb.yandexcloud.net:8020 /user/master/data/geo/events/ 2022-05-21 28
+## spark-submit --master yarn --deploy-mode cluster /scripts/update_stg_by_date_job.py sname hdfs_path geo_path date depth
 
 args = {
     "owner": "dosperados",
@@ -47,9 +47,9 @@ args = {
 }
 
 with DAG(
-        'Calc_metrics_and_exports_marts',
+        'Dayly_update_stg',
         default_args=args,
-        description='Launch pyspark job for calculating GEO metrics and export marts',
+        description='Launch pyspark job for update stg layer and call the calculating DAG',
         catchup=False,
         schedule_interval=None,
         start_date=datetime(2022, 10, 14),
@@ -59,21 +59,9 @@ with DAG(
 
     start_task = DummyOperator(task_id='start')
 
-    calculating_geo_analitics_task = SparkSubmitOperator(
-        task_id='calculating_geo_analitics_job',
-        application ='/scripts/calculating_geo_analitics_job.py' ,
-        conn_id= 'yarn_spark',
-        application_args = [sname, hdfs_path, geo_path, date, depth],
-        conf={
-        "spark.driver.maxResultSize": "20g"
-        },
-        executor_cores = 2,
-        executor_memory = '4g'
-    )
-
-    calculating_user_analitics_task = SparkSubmitOperator(
-        task_id='calculating_user_analitics_job',
-        application ='/scripts/calculating_user_analitics_job.py' ,
+    update_stg_by_date_task = SparkSubmitOperator(
+        task_id='update_stg_by_date_job',
+        application ='/scripts/update_stg_by_date_job.py' ,
         conn_id= 'yarn_spark',
         application_args = [sname, hdfs_path, geo_path, date, depth],
         conf={
@@ -85,4 +73,4 @@ with DAG(
 
     end_task = DummyOperator(task_id='end')
 
-    start_task >> calculating_user_analitics_task >> calculating_geo_analitics_task >> end_task
+    start_task >> update_stg_by_date_task  >> end_task
