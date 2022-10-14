@@ -22,8 +22,7 @@
 - [ ] Построить витрину для рекомендации друзей
 - [x] Автоматизировать обновление витрин
 
-### Структура витрины - в разрезе пользователей
-#### Состав витрины - `df_user_analitics_mart`:
+#### Состав витрины - `df_user_analitics_mart` (в разрезе пользователей) :
 * `user_id` — идентификатор пользователя.
 * `act_city` — актуальный адрес. Это город, из которого было отправлено последнее сообщение.
 * `home_city` — домашний адрес. Это последний город, в котором пользователь был дольше 27 дней.
@@ -33,9 +32,34 @@
 	> Расчет местного времени функцией: **F.from_utc_timestamp(F.col("TIME_UTC"),F.col('timezone'))** где:
 		 `TIME_UTC` — время в таблице событий. Указано в UTC+0.
 		 `timezone` — актуальный адрес. Атрибуты содержатся в виде Australia/Sydney.
+```
++-------+--------+---------+------------+--------------------+-------------------+
+|user_id|act_city|home_city|travel_count|        travel_array|         local_time|
++-------+--------+---------+------------+--------------------+-------------------+
+|     26|  Sydney|     null|        null|[Launceston, Town...|2022-05-13 10:00:00|
+|   1806|  Sydney|     null|           6|[Gold Coast, Bris...|2021-05-20 10:00:00|
+|   3091|  Sydney|     null|        null|[Darwin, Cranbour...|2022-05-01 10:00:00|
+|   7747|  Sydney|     null|        null|[Maitland, Melbou...|2021-04-28 10:00:00|
+|   8440|  Sydney|     null|           2|[Mackay, Maitland...|2021-05-02 10:00:00|
+|  10959|  Sydney|     null|           4|[Maitland, Canber...|2022-05-07 10:00:00|
+|  11945|  Sydney|     null|        null|[Gold Coast, Canb...|2021-04-25 10:00:00|
+|  12044|  Sydney|     null|        null|[Wollongong, Ball...|2022-05-19 10:00:00|
+|  13248|  Sydney|     null|        null|[Rockhampton, Ben...|2021-04-27 10:00:00|
+|  13518|  Sydney|     null|        null|[Cranbourne, Toow...|2021-05-08 10:00:00|
++-------+--------+---------+------------+--------------------+-------------------+
+only showing top 10 rows
 
-### Структура витрины - в разрезе зон
-#### Состав витрины - `df_geo_analitics_mart`:
+root
+ |-- user_id: long (nullable = true)
+ |-- act_city: string (nullable = true)
+ |-- home_city: string (nullable = true)
+ |-- travel_count: integer (nullable = true)
+ |-- travel_array: array (nullable = true)
+ |    |-- element: string (containsNull = false)
+ |-- local_time: timestamp (nullable = true)
+```
+
+#### Состав витрины - `df_geo_analitics_mart` (разрезе зон):
 * `month` — месяц расчёта;
 * `week` — неделя расчёта;
 * `zone_id` — идентификатор зоны (города);
@@ -48,12 +72,15 @@
 * `month_subscription` — количество подписок за месяц;
 * `month_user` — количество регистраций за месяц.
 
-### Слои хранилища
+
+#### Слои хранилища
 * `RAW` - /user/master/data/geo/events/ (**hdfs**)
 * `STG` - /user/dosperados/data/events/ (**hdfs**)
 * `DDS - geo` - /user/dosperados/data/citygeodata/geo.csv (**hdfs**)
 * `DDS - events` - /user/dosperados/data/events/date=yyyy-mm-dd (**hdfs**)
 * `Mart` - /user/dosperados/data/marts (**hdfs**)
+	* geo  - разрезе зон
+	* users - в разрезе пользователей
 
 
 ### Описание схемы RAW-слоя
