@@ -78,6 +78,9 @@ Airflow startr DAG -> PySpark read -> Hadoop -> PySpark calculation metric -> St
 - `/src/dags` - DAG - файлы
 	- `DAG_initial_load.py` — Инициальная партиционорование данных  выполняется в ручную (однакратно)  
 	- `DAG_main_calc_marts.py` — DAG производит запуск джобов расчета метрик
+	- `DAG_update_stg.py` — DAG обновляет слой STG из источника и автоматически запускает **DAG_main_calc_marts.py** для расчета метирик ветрины.
 	
 - `/src/sqripts` - py файлы c job'ами
-	- ccc
+	- `initial_load_job.py` — 
+	- `calculating_user_analitics_job.py` — 
+	- `calculating_geo_analitics_job.py` — 
