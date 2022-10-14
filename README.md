@@ -72,6 +72,21 @@ root
 * `month_subscription` — количество подписок за месяц;
 * `month_user` — количество регистраций за месяц.
 
+```
+
+root
+ |-- zone_id: long (nullable = true)
+ |-- week: timestamp (nullable = true)
+ |-- month: timestamp (nullable = true)
+ |-- week_message: long (nullable = false)
+ |-- month_message: long (nullable = false)
+ |-- week_user: long (nullable = true)
+ |-- month_user: long (nullable = true)
+ |-- week_reaction: long (nullable = true)
+ |-- month_reaction: long (nullable = true)
+ |-- week_subscription: long (nullable = true)
+ |-- month_subscription: long (nullable = true)
+```
 
 #### Слои хранилища
 * `RAW` - /user/master/data/geo/events/ (**hdfs**)
