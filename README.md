@@ -48,14 +48,24 @@
 * `month_subscription` — количество подписок за месяц;
 * `month_user` — количество регистраций за месяц.
 
-### Структура RAW-слоя
+### Слои хранилища
+* `RAW` - /user/master/data/geo/events/ (**hdfs**)
+* `STG` - /user/dosperados/data/events/ (**hdfs**)
+* `DDS - geo` - /user/dosperados/data/citygeodata/geo.csv (**hdfs**)
+* `DDS - events` - /user/dosperados/data/events/date=yyyy-mm-dd (**hdfs**)
+* `Mart` - /user/dosperados/data/marts
+
+
+### Описание схемы RAW-слоя
 ~~Здест структура источника~~
 
-### Структура STG-слоя
+### Описание схемы STG-слоя
 ~~Здест структура партиционированного слоя~~
 
 ## Схема взаимодействия
 Airflow startr DAG -> PySpark read -> Hadoop -> PySpark calculation metric
+
+
 
 ## Запуск проекта
 1. Загрузить **variables** из файла `/src/variables.json` в Airflow - Variable
