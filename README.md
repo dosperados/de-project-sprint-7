@@ -16,11 +16,19 @@
 Благодаря такой аналитике в соцсеть можно будет вставить рекламу: приложение сможет учитывать местонахождение пользователя и предлагать тому подходящие услуги компаний-партнёров.
 
 ### Основная цель:
-- [x] Обновить структуру Data Lake
-- [x] Создать витрину в разрезе пользователей
-- [x] Создать витрину в разрезе зон
-- [ ] Построить витрину для рекомендации друзей
-- [x] Автоматизировать обновление витрин
+- [x] 1. Обновить структуру Data Lake
+- [x] 2. Создать витрину в разрезе пользователей
+- [x] 3. Создать витрину в разрезе зон
+- [ ] 4. Построить витрину для рекомендации друзей
+- [x] 5. Автоматизировать обновление витрин
+
+## 1. Задача **Обновить структуру Data Lake** 
+Задача реализована в `DAG_initial_load.py` и `initial_load_job.py.
+`initial_load_job.py` считывает все данные из RAW слоя и сохраняет в STG слой с разбивкой по date, evebt_type.
+
+## 2. Задача **Витрина в разрезе пользователей**
+Задача реализована в `DAG_main_calc_marts.py` и `calculating_user_analitics_job.py`; `calculating_geo_analitics_job.py`.
+Логика расчета:
 
 #### Состав витрины - `df_user_analitics_mart` (в разрезе пользователей) :
 * `user_id` — идентификатор пользователя.
@@ -58,6 +66,9 @@ root
  |    |-- element: string (containsNull = false)
  |-- local_time: timestamp (nullable = true)
 ```
+## 3. Задача **Витрина в разрезе зон**
+Задача реализована в `DAG_main_calc_marts.py` и `calculating_geo_analitics_job.py`.
+Логика расчета:
 
 #### Состав витрины - `df_geo_analitics_mart` (разрезе зон):
 * `month` — месяц расчёта;
@@ -101,6 +112,36 @@ root
  |-- week_subscription: long (nullable = true)
  |-- month_subscription: long (nullable = true)
 ```
+
+## 4. Задача **Витрина для рекомендации друзей**
+Задача реализована в `DAG_main_calc_marts.py` и `calculating_frends_recomendations_job.py`.
+##### Логика расчета:
+	I. Из слоя Subscription получаем все подписки (убрав дубли, если есть)
+		df_all_subscriptions 
+			|-- chanel_id: long (nullable = false)
+			|-- user_id: long (nullable = false)
+	II. Перемножаем подписки - делаем **INNER JOIN** 
+	`df_cross_subscriptions = df_all_subscriptions.join(df_all_subscriptions, on=["chanel_id"], "inner")`
+		|-- chanel_id: long (nullable = false)
+		|-- user_left: long (nullable = false)
+		|-- user_right: long (nullable = false)
+	III. Удаляем дубли в df_cross_subscriptions
+	IV. Создаем **df_user_communications** по людям которые переписывались
+		df_user_message_from_to (источник messages поля message_from & message_to)
+			|-- user_left: long (nullable = false)
+			|-- user_right: long (nullable = false)
+	    	df_user_message_to_from (источник messages поля  message_to & message_from)
+			|-- user_left: long (nullable = false)
+			|-- user_right: long (nullable = false)
+	    	df_user_communications = df_user_message_from_to.union(df_user_message_to_from)
+			|-- user_left: long (nullable = false)
+			|-- user_right: long (nullable = false)
+	V. Вычитаем из df_subscriptions_without_communication = df_cross_subscriptions - df_user_communications по совадающим user_left; user_right
+		|-- chanel_id: long (nullable = false)
+		|-- user_left: long (nullable = false)
+		|-- user_right: long (nullable = false)
+			
+
 
 #### Слои хранилища
 * `RAW` - /user/master/data/geo/events/ (**hdfs**)
@@ -178,4 +219,5 @@ Airflow startr DAG -> PySpark read -> Hadoop -> PySpark calculation metric -> St
 	- `initial_load_job.py` — Job инициальной загрузки.
 	- `calculating_user_analitics_job.py` — Job расчета пользовательских метрик и сохранения витрины.
 	- `calculating_geo_analitics_job.py` — Job расчета geo метрик и сохранения витрины.
+	- `calculating_frends_recomendations_job.py` - Job расчета метрик ветрины рекомендации друзей.
 	- `update_stg_by_date_job.py`  — Job обновления STG.
