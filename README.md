@@ -177,7 +177,7 @@ root
 		|-- user_right: long (nullable = false)
 		|-- processed_dttm: datetime (nullable = false)
 		|-- zone_id: long (nullable = false)
-		|-- location_time: datetime (nullable = false)
+		|-- local_time: datetime (nullable = false)
 	
 
 
