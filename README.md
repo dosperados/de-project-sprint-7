@@ -140,7 +140,44 @@ root
 		|-- chanel_id: long (nullable = false)
 		|-- user_left: long (nullable = false)
 		|-- user_right: long (nullable = false)
-			
+	+ добавляем данные по 
+	VI. Создаем df_events_coordinats со всеми событиями (message/reactions/subscrubtions) у которых есть координаты (округляем координаты на 2 знака и удаляем дубликаты - это решение я принял для уменьшения прогрешности сохранения координат из одного места и уменьшения кол-ва таких событий. Тем самым мы укрупняем точку и сокращаем их кол-во)
+		|-- user_id: long (nullable = false)
+		|-- lon: long (nullable = false)
+		|-- lat: long (nullable = false)
+	VII. Создаем df_events_subscription_coordinat с подписками и координатами на основе 
+	     df_events_subscription_coordinat = df_subscriptions_without_communication as a join df_events_coordinats as b on a.user_id == b.user_left
+	     df_events_subscription_coordinat = df_subscriptions_without_communication as a join df_events_coordinats as b on a.user_id == b.user_right
+	     	|-- chanel_id: long (nullable = false)
+		|-- user_left: long (nullable = false)
+		|-- user_right: long (nullable = false)
+		|-- lon_left: long (nullable = false)
+		|-- lat_left: long (nullable = false)
+		|-- lon_right: long (nullable = false)
+		|-- lat_right: long (nullable = false)
+	VIII. Считаем дистаницию df_distance - фильтруем и оставляем только те у которых расстояние <= 1км
+		|-- chanel_id: long (nullable = false)
+		|-- user_left: long (nullable = false)
+		|-- user_right: long (nullable = false)
+		|-- lon_left: long (nullable = false)
+		|-- lat_left: long (nullable = false)
+		|-- lon_right: long (nullable = false)
+		|-- lat_right: long (nullable = false)
+		|-- distance: long (nullable = false)
+	IX. Перемножаем на координаты городов df_user_city (так как растояние 1 км между пользователями значит они находятся в одном городе и множно брать координаты одного человека для вычисления zone_id)
+		|-- user_left: long (nullable = false)
+		|-- user_right: long (nullable = false)
+		|-- lon_left: long (nullable = false)
+		|-- lat_left: long (nullable = false)
+		|-- lon_city: long (nullable = false)
+		|-- lat_city: long (nullable = false)
+	X. Считаем расстояние до города df_distance_city для вычисления zone_id фильтруем чтобы получить только один город для связки user_left; user_right
+		|-- user_left: long (nullable = false)
+		|-- user_right: long (nullable = false)
+		|-- processed_dttm: datetime (nullable = false)
+		|-- zone_id: long (nullable = false)
+		|-- location_time: datetime (nullable = false)
+	
 
 
 #### Слои хранилища
