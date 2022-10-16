@@ -179,6 +179,16 @@ root
 		|-- zone_id: long (nullable = false)
 		|-- local_time: datetime (nullable = false)
 	
+```
+
+root
+ |-- user_right: string (nullable = true)
+ |-- user_left: string (nullable = true)
+ |-- zone_id: long (nullable = true)
+ |-- city_name: string (nullable = true)
+ |-- processed_dttm: date (nullable = false)
+ |-- local_time: timestamp (nullable = true)
+```
 
 
 #### Слои хранилища
@@ -257,5 +267,5 @@ Airflow startr DAG -> PySpark read -> Hadoop -> PySpark calculation metric -> St
 	- `initial_load_job.py` — Job инициальной загрузки.
 	- `calculating_user_analitics_job.py` — Job расчета пользовательских метрик и сохранения витрины.
 	- `calculating_geo_analitics_job.py` — Job расчета geo метрик и сохранения витрины.
-	- `calculating_frends_recomendations_job.py` - Job расчета метрик ветрины рекомендации друзей.
+	- `calculating_friend_recomendation_analitics_job.py` - Job расчета метрик ветрины рекомендации друзей.
 	- `update_stg_by_date_job.py`  — Job обновления STG.
