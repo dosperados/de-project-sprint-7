@@ -246,11 +246,11 @@ Airflow startr DAG -> PySpark read -> Hadoop -> PySpark calculation metric -> St
 ## Запуск проекта
 1. Загрузить **variables** из файла `/src/variables.json` в Airflow - Variable
 2. Инициальная загрузка данных **DAG_initial_load.py** выполняется в ручную (один раз) далее используется скрипт инкрементальной загрузки и расчетов
-3. Обновление STG слоя - **DAG_update_stg.py** автозапуск каждый день (ХОТЕЛ НАСТРОИТЬ ПОСЛЕДОВАТЕЛЬНЫЙ ВЫЗОВ СЛЕДУЩЕГО **DAG_main_calc_marts.py** - не знаю как, если поможете буду благодарен)
-4. Для расчета витрины запустить **DAG_main_calc_marts.py**
-5. Результаты расчетов сохранены в формате `parquet` в соответвующих папках
+3. Обновление STG слоя - **DAG_main_calc_marts.py** автозапуск каждый день и расчета витрины.
+4. Результаты расчетов сохранены в формате `parquet` в соответвующих папках
 	- hdfs:/user/dosperados/marts/users
 	- hdfs:/user/dosperados/marts/geo
+	- dfs:/user/dosperados/marts/friend_recomendation
 
 ### Структура репозитория
 
