@@ -4,7 +4,6 @@ import os
 import findspark
 findspark.init()
 findspark.find()
-from pyspark.sql import SparkSession
 
 #переменные окружения спарка
 os.environ['HADOOP_CONF_DIR'] = '/etc/hadoop/conf'
@@ -43,13 +42,13 @@ args = {
     'email': ['dosperados@example.com'],
     'email_on_failure': False,
     'email_on_retry': False,
-    'retries': 0
+    'retries': 3
 }
 
 with DAG(
         'Calc_metrics_and_exports_marts',
         default_args=args,
-        description='Launch pyspark job for calculating GEO metrics and export marts',
+        description='Launch pyspark job for update stg layer and call the calculating marts',
         catchup=False,
         schedule_interval=None,
         start_date=datetime(2022, 10, 14),
@@ -58,6 +57,18 @@ with DAG(
 ) as dag:
 
     start_task = DummyOperator(task_id='start')
+
+    update_stg_by_date_task = SparkSubmitOperator(
+        task_id='update_stg_by_date_job',
+        application ='/scripts/update_stg_by_date_job.py' ,
+        conn_id= 'yarn_spark',
+        application_args = [sname, hdfs_path, geo_path, date, depth],
+        conf={
+        "spark.driver.maxResultSize": "20g"
+        },
+        executor_cores = 2,
+        executor_memory = '4g'
+    )
 
     calculating_geo_analitics_task = SparkSubmitOperator(
         task_id='calculating_geo_analitics_job',
@@ -79,10 +90,22 @@ with DAG(
         conf={
         "spark.driver.maxResultSize": "20g"
         },
-        executor_cores = 2,
-        executor_memory = '4g'
+        executor_cores = 4,
+        executor_memory = '16g'
+    )
+
+    calculating_friend_recomendation_analitics_task = SparkSubmitOperator(
+        task_id='calculating_friend_recomendation_analitics_job',
+        application ='/scripts/calculating_friend_recomendation_analitics_job.py' ,
+        conn_id= 'yarn_spark',
+        application_args = [sname, hdfs_path, geo_path, date, depth],
+        conf={
+        "spark.driver.maxResultSize": "20g"
+        },
+        executor_cores = 6,
+        executor_memory = '24g'
     )
 
     end_task = DummyOperator(task_id='end')
 
-    start_task >> calculating_user_analitics_task >> calculating_geo_analitics_task >> end_task
+    start_task >> update_stg_by_date_task >> calculating_user_analitics_task >> calculating_geo_analitics_task >> calculating_friend_recomendation_analitics_task >> end_task

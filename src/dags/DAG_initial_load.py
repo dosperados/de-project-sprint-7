@@ -4,7 +4,6 @@ import os
 import findspark
 findspark.init()
 findspark.find()
-from pyspark.sql import SparkSession
 
 #переменные окружения спарка
 os.environ['HADOOP_CONF_DIR'] = '/etc/hadoop/conf'
@@ -40,7 +39,7 @@ args = {
     'email': ['dosperados@example.com'],
     'email_on_failure': False,
     'email_on_retry': False,
-    'retries': 0
+    'retries': 3
 }
 
 with DAG(
