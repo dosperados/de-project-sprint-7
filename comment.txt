@@ -1,10 +1,10 @@
 Кирилл добрый день!
 спасибо за комментарии, 
 
-1. дописал 4 шаг - витрина для рекомендации друзей
+1. Дописал 4. Задача **Витрина для рекомендации друзей** + сам код в  src/scripts/calculating_friend_recomendation_analitics_job.py.
   алгоритм описан в https://github.com/dosperados/de-project-sprint-7/blob/main/README.md
   по алгоритму есть несколько вопросов они описаны в коде по ходу подсчета метрик и в описании алгоритма.
-2. Исправил DAG - src/dags/DAG_main_calc_marts.py -  перенес в него обновление дня
-3. Во все job`ы добавил df.createOrReplaceTempView("Name_view")
-4. Убрал не используемые библиотеки
-5. Добавил кол-во попыток запуска DAG 'retries': 3 
+2. Исправил DAG - src/dags/DAG_main_calc_marts.py -  перенес в него обновление дня.
+3. Во все job`ы добавил df.createOrReplaceTempView("Name_view").
+4. Убрал не используемые библиотеки.
+5. Добавил кол-во попыток запуска DAG 'retries': 3.
