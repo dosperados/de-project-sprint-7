@@ -6,7 +6,7 @@
 В продукт планируют внедрить систему рекомендации друзей. Приложение будет предлагать пользователю написать человеку, если пользователь и адресат:
 - состоят в одном канале,
 - раньше никогда не переписывались,
-- --находятся не дальше 1 км друг от друга.--
+- находятся не дальше 1 км друг от друга.
 
 При этом команда хочет лучше изучить аудиторию соцсети, чтобы в будущем запустить монетизацию. Для этого было решено провести геоаналитику:
 - Выяснить, где находится большинство пользователей по количеству сообщений, лайков и подписок из одной точки.
@@ -19,7 +19,7 @@
 - [x] 1. Обновить структуру Data Lake
 - [x] 2. Создать витрину в разрезе пользователей
 - [x] 3. Создать витрину в разрезе зон
-- [ ] 4. Построить витрину для рекомендации друзей
+- [x] 4. Построить витрину для рекомендации друзей
 - [x] 5. Автоматизировать обновление витрин
 
 ## 1. Задача **Обновить структуру Data Lake** 
@@ -121,12 +121,12 @@ root
 			|-- chanel_id: long (nullable = false)
 			|-- user_id: long (nullable = false)
 	II. Перемножаем подписки - делаем **INNER JOIN** 
-	`df_cross_subscriptions = df_all_subscriptions.join(df_all_subscriptions, on=["chanel_id"], "inner")`
-		|-- chanel_id: long (nullable = false)
+	`df_subscriptions = df_all_subscriptions.join(df_all_subscriptions, on=["chanel_id"], "inner")`
+	после перемножения нужно убрать пары **filter(F.col("user_left") != F.col("user_right") )**
+	Удаляем дубли в df_subscriptions - удалить лишние столбцы
 		|-- user_left: long (nullable = false)
 		|-- user_right: long (nullable = false)
-	III. Удаляем дубли в df_cross_subscriptions
-	IV. Создаем **df_user_communications** по людям которые переписывались
+	III. Создаем **df_user_communications** по людям которые переписывались
 		df_user_message_from_to (источник messages поля message_from & message_to)
 			|-- user_left: long (nullable = false)
 			|-- user_right: long (nullable = false)
@@ -140,7 +140,6 @@ root
 		|-- chanel_id: long (nullable = false)
 		|-- user_left: long (nullable = false)
 		|-- user_right: long (nullable = false)
-	+ добавляем данные по 
 	VI. Создаем df_events_coordinats со всеми событиями (message/reactions/subscrubtions) у которых есть координаты (округляем координаты на 2 знака и удаляем дубликаты - это решение я принял для уменьшения прогрешности сохранения координат из одного места и уменьшения кол-ва таких событий. Тем самым мы укрупняем точку и сокращаем их кол-во) - У дробных минут при том же общем количестве цифр — N56° 43.90' E36° 53.00' — максимальная погрешность 13 метров.
 		|-- user_id: long (nullable = false)
 		|-- lon: long (nullable = false)
@@ -149,27 +148,22 @@ root
 	     df_events_subscription_coordinat = df_subscriptions_without_communication as a join df_events_coordinats as b on a.user_id == b.user_left
 	     df_events_subscription_coordinat = df_subscriptions_without_communication as a join df_events_coordinats as b on a.user_id == b.user_right
 	     Здесь важный момент - так как мы делаем "рекомендательную витрину друзей" на этом этапе мы получаем множество пересечений интересов пользователей соц сети. Т.е. они подписаны на один канал ни разу не общались вместе и бывают в опредленных местах. На следующем этапе мы вычислим дистанцию друг от друга и отфильтруем только те совпадения, где расстояние 1 км и меньше.
-	     	|-- chanel_id: long (nullable = false)
+Тут требуется ваша помощь, если вычислять расстояние на всем df то расчет падает. Какие есть методы для вычисления таких полей "distance".
 		|-- user_left: long (nullable = false)
 		|-- user_right: long (nullable = false)
 		|-- lon_left: long (nullable = false)
 		|-- lat_left: long (nullable = false)
 		|-- lon_right: long (nullable = false)
 		|-- lat_right: long (nullable = false)
-	VIII. Считаем дистаницию df_distance - фильтруем и оставляем только те у которых расстояние <= 1км
-		|-- chanel_id: long (nullable = false)
+	VIII. Считаем дистаницию df_distance - фильтруем и оставляем только те у которых расстояние <= 1км 
 		|-- user_left: long (nullable = false)
 		|-- user_right: long (nullable = false)
-		|-- lon_left: long (nullable = false)
-		|-- lat_left: long (nullable = false)
-		|-- lon_right: long (nullable = false)
-		|-- lat_right: long (nullable = false)
+		|-- lon: long (nullable = false) - бывшее поле lon_left
+		|-- lat: long (nullable = false) - бывшее поле lat_right
 		|-- distance: long (nullable = false)
 	IX. Перемножаем на координаты городов df_user_city (так как растояние 1 км между пользователями значит они находятся в одном городе и множно брать координаты одного человека для вычисления zone_id)
 		|-- user_left: long (nullable = false)
 		|-- user_right: long (nullable = false)
-		|-- lon_left: long (nullable = false)
-		|-- lat_left: long (nullable = false)
 		|-- lon_city: long (nullable = false)
 		|-- lat_city: long (nullable = false)
 	X. Считаем расстояние до города df_distance_city для вычисления zone_id фильтруем чтобы получить только один город для связки user_left; user_right
