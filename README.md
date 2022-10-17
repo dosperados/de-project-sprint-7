@@ -148,7 +148,7 @@ root
 	     df_events_subscription_coordinat = df_subscriptions_without_communication as a join df_events_coordinats as b on a.user_id == b.user_left
 	     df_events_subscription_coordinat = df_subscriptions_without_communication as a join df_events_coordinats as b on a.user_id == b.user_right
 	     Здесь важный момент - так как мы делаем "рекомендательную витрину друзей" на этом этапе мы получаем множество пересечений интересов пользователей соц сети. Т.е. они подписаны на один канал ни разу не общались вместе и бывают в опредленных местах. На следующем этапе мы вычислим дистанцию друг от друга и отфильтруем только те совпадения, где расстояние 1 км и меньше.
-Тут требуется ваша помощь, если вычислять расстояние на всем df то расчет падает. Какие есть методы для вычисления таких полей "distance".
+	Тут требуется ваша помощь, если вычислять расстояние на всем df то расчет падает. Какие есть методы для вычисления таких полей "distance".
 		|-- user_left: long (nullable = false)
 		|-- user_right: long (nullable = false)
 		|-- lon_left: long (nullable = false)
