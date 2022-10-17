@@ -176,11 +176,10 @@ root
 ```
 
 root
- |-- user_right: string (nullable = true)
- |-- user_left: string (nullable = true)
+ |-- user_right: long (nullable = true)
+ |-- user_left: long (nullable = true)
  |-- zone_id: long (nullable = true)
- |-- city_name: string (nullable = true)
- |-- processed_dttm: date (nullable = false)
+ |-- processed_dttm: timestamp (nullable = false)
  |-- local_time: timestamp (nullable = true)
 ```
 
