@@ -54,7 +54,7 @@ def main():
                     .option("basePath", f"{hdfs_path}{geo_path}")\
                     .parquet(f"{hdfs_path}{geo_path}")\
 
-        Save in parquet and partition by "date", "event_type" for easy read work with df
+        #Save in parquet and partition by "date", "event_type" for easy read work with df
         events.write \
                 .partitionBy("date", "event_type") \
                 .mode("overwrite") \

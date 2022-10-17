@@ -203,6 +203,12 @@ def main():
             .parquet(f"{hdfs_path}/user/{sname}/marts/users")
     )
 
+    #по вашей рекомендации сделал createOrReplaceTempView - но есть недопонимение как это потом будут использовать аналитики
+    #в каком это формате сохраняется и где будет хранится)
+    (
+        df_user_analitics_mart.createOrReplaceTempView("df_user_analitics_mart")
+    )
+
 
 
 if __name__ == '__main__':
